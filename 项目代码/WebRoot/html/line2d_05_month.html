@@ -1,0 +1,178 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title></title>
+<script type="text/javascript" src="../jedate/jedate.js"></script>
+
+<style>
+.datainp{ width:200px; height:30px; border:1px #ccc solid;}
+.datep{ margin-bottom:40px;}
+</style>
+<script type="text/javascript" src="../js/ichart.1.2.min.js"></script>
+<script type="text/javascript" src="../js/jquery-1.7.2.min.js"></script>
+<link rel="stylesheet" href="../css/demo.css" type="text/css"/>
+		<script type="text/javascript">
+			$(function(){
+				$('#button').click(function (){
+					var startTime=document.getElementById("indate").value;
+					var endTime=document.getElementById("indate1").value;
+					startTime=startTime.replace(/[\u4E00-\u9FA5]/g,"/");
+					endTime=endTime.replace(/[\u4E00-\u9FA5]/g,"/");
+					////alert(startTime+","+endTime);
+					
+					var n=0;
+					var url="../servlet/PersonsFlowCountServlet?method=countByMonth";
+					var datas={"startTime":startTime,"endTime":endTime};
+					$.getJSON(url,datas,function(data){	 
+						n=data.timeDif;	
+						//alert(n);
+						if(n<0)
+						{
+							alert("输入的统计时限不合法，请重新输入！");
+						}	
+						////alert(data.personNum[1]);
+						////alert(data.allDateStrings[0]);
+						var allDate=data.allDateStrings;
+						//alert(allDate[0]);
+						var max=Math.max.apply(null, data.personNum);//最大值
+						var min=Math.min.apply(null, data.personNum);//最小值
+						
+						max = Math.ceil(max
+										/ (Math.pow(10,
+												(max.toString().length - 1))))
+										* Math.pow(10,
+												(max.toString().length - 1));
+					    min = Math.floor(min
+										/ (Math.pow(10,
+												(min.toString().length - 1))))
+										* Math.pow(10,
+												(min.toString().length - 1));
+						//alert(min+";"+max);
+ 
+				   
+				   //初始化统计图数据
+					var flow=[];
+					for(var i=0;i<=n;i++){
+						flow.push(data.personNum[i]);
+					}
+					
+					var data = [
+					         	{
+					         		name : '客流量',
+					         		value:flow,
+					         		color:'#0d8ecf',
+					         		line_width:2,
+					         	}
+					         ];					
+					//var labels = ["2012-12-01","2012-12-02","2012-12-03","2012-12-04","2012-12-05","2012-12-06"];
+					//alert(allDate[1]);
+					var labels=[];
+					for(var i=0;i<=n;i++){
+						labels[i]=allDate[i];
+						//alert(allDate[i]);
+					}
+					
+					var line = new iChart.LineBasic2D({
+						render : 'canvasDiv',
+						data: data,
+						align:'center',
+						title : '您店铺的客流量统计图',
+						subtitle : '平均18:00-22:00客流量达到最大值(单位：人)',
+						footnote : '数据来源：WiFi探针检测',
+						width : 800,
+						height : 400,
+						label : {
+							color : '#ff66ff'	
+						},
+						sub_option:{
+							smooth : true,//平滑曲线
+							point_size:10
+						},
+						tip:{
+							enable:true,
+							shadow:true
+						},
+						legend : {
+							enable : false
+						},
+						crosshair:{
+							enable:true,
+							line_color:'#62bce9'
+						},
+						coordinate:{
+							width:600,
+							valid_width:500,
+							height:260,
+							axis:{
+								color:'#9f9f9f',
+								width:[0,0,2,2]
+							},
+							grids:{
+								vertical:{
+									way:'share_alike',
+							 		value:12
+								}
+							},
+							scale:[{
+								 position:'left',	
+								 start_scale:min,
+								 end_scale:max,
+								 scale_space:(max-min)/10,
+								 scale_size:2,
+								 scale_color:'#9f9f9f'
+							},{
+								 position:'bottom',	
+								 labels:labels
+							}]
+						}
+					});
+				//开始画图
+				line.draw();
+				});
+				 	});
+					
+		});
+				
+		</script>
+</head>
+
+<body>
+			<div style="width:100%;height:56px;">
+				请选择统计时限：
+				<div style="width:100%;height:1000px;">
+					<input class="datainp" id="indate" type="text" placeholder="只显示年月" value=""  readonly>
+					~<input class="datainp" id="indate1" type="text" placeholder="只显示年月" value=""  readonly>
+					<input id="button" type="button" value="确认">
+				</div>
+			</div>
+			<div id='canvasDiv'></div>
+			<div class='ichartjs_info'>				
+				<div class='ichartjs_sm'>说明</div>
+				<div class='ichartjs_details'>
+					该图表展示了网站最近几个月的客流量统计。
+				</div>
+				<span class='ichartjs_sm'>备注：</span>
+				<span class='ichartjs_details'>
+					数据均为模拟。
+				</span>
+			</div>
+<script type="text/javascript">
+    //jeDate.skin('gray');
+	jeDate({
+		dateCell:"#indate",//isinitVal:true,
+		format:"YYYY年MM月",
+		isTime:false, //isClear:false,
+		minDate:"2015-10-19 00:00:00",
+		maxDate:"2016-11-8 00:00:00"
+	})
+	jeDate({
+		dateCell:"#indate1",//isinitVal:true,
+		format:"YYYY年MM月",
+		isTime:false, //isClear:false,
+		minDate:"2015-10-19 00:00:00",
+		maxDate:"2016-11-8 00:00:00"
+	})
+</script>
+</body>
+</html>
